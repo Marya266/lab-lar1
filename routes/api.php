@@ -22,8 +22,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'show']);
     Route::put('/user', [UserController::class, 'update']);
     Route::get('/users', [UserController::class, 'index']);
-    Route::apiResource('roles', RoleController::class);
-    
+    Route::apiResource('roles', RoleController::class);    
+    Route::middleware('permission:users.edit')->group(function () {
+        Route::post('/users/{user}/roles/{role}', [UserController::class, 'assignRole']);
+        Route::delete('/users/{user}/roles/{role}', [UserController::class, 'removeRole']);
+    });
+
     Route::apiResource('permissions', PermissionController::class);
 
 });
@@ -33,4 +37,5 @@ Route::get('/login', function () {
         'message' => 'Это API приложение. Используйте POST /api/login для авторизации.'
     ], 401);
 })->name('login');
+
 

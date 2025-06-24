@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\DTOs\UserResourceDTO;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use DB;
+use App\Models\Role;
+
 
 
 class UserController extends Controller
@@ -52,9 +55,11 @@ class UserController extends Controller
         }
     }
     
-    public function update(Request $request): JsonResponse
+      public function update(Request $request): JsonResponse
     {
         try {
+            DB::beginTransaction();
+            
             $user = $request->user();
             
             $validatedData = $request->validate([
@@ -65,6 +70,8 @@ class UserController extends Controller
             $user->update($validatedData);
             $userResource = new UserResourceDTO($user->fresh()->toArray());
             
+            DB::commit();
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Данные пользователя обновлены',
@@ -72,6 +79,7 @@ class UserController extends Controller
             ], 200);
             
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Ошибка при обновлении данных пользователя',
@@ -79,5 +87,74 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Назначить роль пользователю
+     */
+    public function assignRole(User $user, Role $role): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+            
+            if ($user->hasRole($role->code)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Пользователь уже имеет эту роль'
+                ], 422);
+            }
+
+            $user->assignRole($role);
+            
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Роль успешно назначена пользователю'
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Ошибка при назначении роли',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Убрать роль у пользователя
+     */
+    public function removeRole(User $user, Role $role): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+            
+            if (!$user->hasRole($role->code)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'У пользователя нет этой роли'
+                ], 422);
+            }
+
+            $user->removeRole($role);
+            
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Роль успешно убрана у пользователя'
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Ошибка при удалении роли',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
 }
