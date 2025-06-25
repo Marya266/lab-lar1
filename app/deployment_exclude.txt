@@ -1,0 +1,11 @@
+# Файлы и папки для исключения из удаления при автоматическом обновлении
+.env
+.env.local
+.env.production
+storage/logs/
+storage/app/
+storage/framework/
+public/storage
+node_modules/
+vendor/
+.git/

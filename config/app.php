@@ -97,6 +97,8 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
+    'git_webhook_secret' => env('GIT_WEBHOOK_SECRET', ''),
+
     'key' => env('APP_KEY'),
 
     'previous_keys' => [

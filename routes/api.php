@@ -7,7 +7,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\TwoFactorController;
-
+use App\Http\Controllers\GitWebhookController;
+use App\Http\Controllers\DeploymentLogController;
 
 
 Route::get('/user', function (Request $request) {
@@ -24,6 +25,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [UserController::class, 'show']);
     Route::put('/user', [UserController::class, 'update']);
+
+     Route::middleware('permission:roles.manage')->group(function () {
+        Route::get('/git/status', [GitWebhookController::class, 'getStatus']);
+        Route::post('/git/deploy', [GitWebhookController::class, 'handleWebhook']); // Ручной деплой
+    });
+
+
+
     Route::prefix('2fa')->group(function () {
         Route::get('/status', [TwoFactorController::class, 'status']);
         Route::post('/setup', [TwoFactorController::class, 'setup']);
@@ -51,6 +60,9 @@ Route::get('/login', function () {
     ], 401);
 })->name('login');
 
+Route::post('/git/webhook', [GitWebhookController::class, 'handleWebhook']);
+
+
 Route::middleware('auth:sanctum')->get('/2fa/current-code', function (Request $request) {
     $user = $request->user();
     $secret = cache()->get("2fa_setup_{$user->id}");
@@ -68,4 +80,11 @@ Route::middleware('auth:sanctum')->get('/2fa/current-code', function (Request $r
         'message' => 'Используйте этот код для включения 2FA',
         'expires_in_seconds' => 30 - (time() % 30)
     ]);
+});
+
+Route::middleware('permission:roles.manage')->group(function () {
+    Route::prefix('deployment')->group(function () {
+        Route::get('/logs', [DeploymentLogController::class, 'getLogs']);
+        Route::delete('/logs', [DeploymentLogController::class, 'clearLogs']);
+    });
 });
