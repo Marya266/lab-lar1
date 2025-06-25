@@ -10,14 +10,28 @@ use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\GitWebhookController;
 use App\Http\Controllers\DeploymentLogController;
 use App\Http\Controllers\LogRequestController;
+use App\Http\Controllers\MessengerController;
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::post('/webhook/telegram', [App\Http\Controllers\WebhookController::class, 'telegramWebhook']);
+Route::post('/webhook/slack', [App\Http\Controllers\WebhookController::class, 'slackWebhook']);
+
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/verify-2fa', [AuthController::class, 'verify2FA']);
+
+Route::prefix('messengers')->group(function () {
+    Route::get('/', [MessengerController::class, 'index']);
+    Route::post('/link-user', [MessengerController::class, 'linkUser']);
+    Route::post('/confirm-user', [MessengerController::class, 'confirmUser']);
+    Route::get('/user/{userId}', [MessengerController::class, 'getUserMessengers']);
+    Route::post('/toggle-notifications', [MessengerController::class, 'toggleNotifications']);
+});
 
 
 

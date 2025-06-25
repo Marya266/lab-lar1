@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 
-
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, Auditable;
@@ -169,6 +168,36 @@ class User extends Authenticatable
 
         return true;
     }
+
+    public function messengers(): BelongsToMany
+{
+    return $this->belongsToMany(Messenger::class, 'users_and_messengers')
+                ->withPivot([
+                    'messenger_user_id',
+                    'status', 
+                    'confirmed_at',
+                    'notifications_enabled',
+                    'verification_code',
+                    'verification_expires_at'
+                ])
+                ->withTimestamps();
+}
+
+public function userMessengers(): HasMany
+{
+    return $this->hasMany(UserMessenger::class);
+}
+
+public function confirmedMessengers(): BelongsToMany
+{
+    return $this->messengers()->wherePivot('status', 'confirmed');
+}
+
+public function enabledMessengers(): BelongsToMany
+{
+    return $this->confirmedMessengers()->wherePivot('notifications_enabled', true);
+}
+
 
 
 }
