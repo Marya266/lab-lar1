@@ -20,7 +20,6 @@ Route::get('/user', function (Request $request) {
 Route::post('/webhook/telegram', [App\Http\Controllers\WebhookController::class, 'telegramWebhook']);
 Route::post('/webhook/slack', [App\Http\Controllers\WebhookController::class, 'slackWebhook']);
 
-
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/verify-2fa', [AuthController::class, 'verify2FA']);
