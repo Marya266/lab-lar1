@@ -9,7 +9,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\GitWebhookController;
 use App\Http\Controllers\DeploymentLogController;
-
+use App\Http\Controllers\LogRequestController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -25,6 +25,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [UserController::class, 'show']);
     Route::put('/user', [UserController::class, 'update']);
+
+       Route::prefix('logs')->group(function () {
+        Route::get('/requests', [LogRequestController::class, 'index']);
+        Route::get('/requests/statistics', [LogRequestController::class, 'statistics']);
+        Route::get('/requests/{id}', [LogRequestController::class, 'show']);
+        Route::delete('/requests/cleanup', [LogRequestController::class, 'cleanup']);
+    });
+
 
      Route::middleware('permission:roles.manage')->group(function () {
         Route::get('/git/status', [GitWebhookController::class, 'getStatus']);
